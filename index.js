@@ -1,9 +1,3 @@
-/// #if !PRODUCTION
-const fetch = require('node-fetch');
-const URL = require('url').URL;
-const Response = fetch.Response;
-/// #endif
-
 const routeMap = new Map();
 const middlewareList = [];
 

@@ -1,17 +1,18 @@
+const UrlPattern = require('url-pattern');
 
 const handlerChain = [];
 
 function use(handler) {
-    handlerChain.push({ path: null, func: handler, method: null });
+    handlerChain.push({ path: new UrlPattern('*'), func: handler, method: '*' });
 }
 function get(path, handler) {
-    handlerChain.push({ path, func: handler, method: 'GET' });
+    handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'GET' });
 }
 function put(path, handler) {
-    handlerChain.push({ path, func: handler, method: 'PUT' });
+    handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'PUT' });
 }
 function post(path, handler) {
-    handlerChain.push({ path, func: handler, method: 'POST' });
+    handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'POST' });
 }
 
 function handleRequest(event) {
@@ -30,18 +31,15 @@ function handleRequest(event) {
             chainLink++;
             if (chainLink < handlerChain.length) {
                 handler = handlerChain[chainLink];
-                // middleware that applies to all paths
-                if (handler.path === null) {
+                const match = handler.path.match(url.pathname);
+                if (match !== null && (handler.method === '*'
+                    || handler.method === event.request.method)) {
+                    context.requestUrlParams = match;
                     handler.func(event.request, context, next);
-                    return;
                 }
-                // path specific middleware
-                if (url.pathname === handler.path) {
-                    handler.func(event.request, context, next);
-                    return;
+                else {
+                    next(); // call next middleware handler
                 }
-                // call next middleware
-                next();
             }
             else {
                 const errorResponse = new Response("404 - Resource not found\n", {
@@ -53,7 +51,6 @@ function handleRequest(event) {
                 context.respondWith(errorResponse)
             }
         }
-
         next();
     });
 }

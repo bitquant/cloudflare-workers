@@ -32,12 +32,12 @@ function handleRequest(event) {
                 handler = handlerChain[chainLink];
                 // middleware that applies to all paths
                 if (handler.path === null) {
-                    handler.func(event, context, next);
+                    handler.func(event.request, context, next);
                     return;
                 }
                 // path specific middleware
                 if (url.pathname === handler.path) {
-                    handler.func(event, context, next);
+                    handler.func(event.request, context, next);
                     return;
                 }
                 // call next middleware
@@ -66,9 +66,9 @@ exports.put = put;
 exports.post = post;
 exports.handleRequest = handleRequest;
 
-function removeTrailingSlash(event, context, next) {
+function removeTrailingSlash(request, context, next) {
 
-    const parsedUrl = new URL(event.request.url);
+    const parsedUrl = new URL(request.url);
     let path = parsedUrl.pathname;
 
     if (path.endsWith('/')) {
@@ -86,9 +86,9 @@ function removeTrailingSlash(event, context, next) {
     }
 }
 
-function removeQueryParams(event, context, next) {
+function removeQueryParams(request, context, next) {
 
-    const parsedUrl = new URL(event.request.url);
+    const parsedUrl = new URL(request.url);
     if (parsedUrl.search.length > 0) {
         parsedUrl.search = '';
         context.respondWith(new Response(null, {

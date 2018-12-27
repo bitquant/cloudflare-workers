@@ -7,6 +7,7 @@ function use(handler) {
 }
 function get(path, handler) {
     handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'GET' });
+    handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'HEAD' });
 }
 function put(path, handler) {
     handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'PUT' });
@@ -45,7 +46,7 @@ function handleRequest(event) {
                 const errorResponse = new Response("404 - Resource not found\n", {
                     status: 404,
                     headers: {
-                        'Content-Type': 'text/html; charset=utf-8'
+                        'Content-Type': 'text/plain; charset=utf-8'
                     }
                 });
                 context.respondWith(errorResponse)

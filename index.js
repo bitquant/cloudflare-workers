@@ -69,7 +69,7 @@ function removeTrailingSlash(request, context, next) {
     const parsedUrl = new URL(request.url);
     let path = parsedUrl.pathname;
 
-    if (path.endsWith('/')) {
+    if (path.endsWith('/') && path.length > 1 ) {
         parsedUrl.pathname = path.slice(0, -1);
         parsedUrl.search = '';
         context.respondWith(new Response(null, {

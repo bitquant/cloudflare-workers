@@ -16,44 +16,41 @@ function post(path, handler) {
     handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'POST' });
 }
 
-function handleRequest(event) {
+async function handleRequest(event) {
 
-    return new Promise(function(resolve) {
-
-        const url = new URL(event.request.url);
+    try {
+        const request = event.request;
+        const url = new URL(request.url);
         const context = {
-            responseHeaders: { },
-            respondWith: response => resolve(response),
-            waitUntil: promise => event.waitUntil(promise),
-        };
-        let chainLink = -1;
+            waitUntil: (p) => event.waitUntil(p)
+        }
 
-        function next() {
-            chainLink++;
-            if (chainLink < handlerChain.length) {
-                handler = handlerChain[chainLink];
-                const match = handler.path.match(url.pathname);
-                if (match !== null && (handler.method === '*'
-                    || handler.method === event.request.method)) {
-                    context.requestUrlParams = match;
-                    handler.func(event.request, context, next);
+        for (let handler of handlerChain) {
+
+            const match = handler.path.match(url.pathname);
+
+            if (match !== null &&
+                (handler.method === '*' || handler.method === event.request.method))
+            {
+                context.pathParams = match;
+
+                const response = await handler.func(request, context);
+
+                if (typeof response !== 'undefined') {
+                    return response;
                 }
-                else {
-                    next(); // call next middleware handler
-                }
-            }
-            else {
-                const errorResponse = new Response("404 - Resource not found\n", {
-                    status: 404,
-                    headers: {
-                        'Content-Type': 'text/plain; charset=utf-8'
-                    }
-                });
-                context.respondWith(errorResponse)
             }
         }
-        next();
-    });
+
+        return new Response("404 - Resource not found\n", {
+            status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8'}
+        });
+    }
+    catch (ex) {
+        return new Response(`500 - ${ex.stack}`, {
+            status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8'}
+        });
+    }
 }
 
 exports.removeTrailingSlash = removeTrailingSlash;
@@ -64,7 +61,7 @@ exports.put = put;
 exports.post = post;
 exports.handleRequest = handleRequest;
 
-function removeTrailingSlash(request, context, next) {
+function removeTrailingSlash(request) {
 
     const parsedUrl = new URL(request.url);
     let path = parsedUrl.pathname;
@@ -72,31 +69,16 @@ function removeTrailingSlash(request, context, next) {
     if (path.endsWith('/') && path.length > 1 ) {
         parsedUrl.pathname = path.slice(0, -1);
         parsedUrl.search = '';
-        context.respondWith(new Response(null, {
-            status: 301,
-            headers: {
-                'Location': `${parsedUrl.toString()}`
-            }
-        }));
-    }
-    else {
-        next();
+        return new Response(null, { status: 301, headers: { 'Location': `${parsedUrl.toString()}`}});
     }
 }
 
-function removeQueryParams(request, context, next) {
+function removeQueryParams(request) {
 
     const parsedUrl = new URL(request.url);
+
     if (parsedUrl.search.length > 0) {
         parsedUrl.search = '';
-        context.respondWith(new Response(null, {
-            status: 301,
-            headers: {
-                'Location': `${parsedUrl.toString()}`
-            }
-        }));
-    }
-    else {
-        next();
+        return new Response(null, {status: 301, headers: {'Location': `${parsedUrl.toString()}`}});
     }
 }

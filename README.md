@@ -23,11 +23,15 @@ See ['Using NPM modules'](https://developers.cloudflare.com/workers/writing-work
 ## Supported Operations
 `worker.use(handler)`  Add middleware that executes on every path
 
+`worker.use(path, handler)`  Add middleware that executes on a specific path
+
 `worker.get(path, handler)`  Executes a handler on GETs for a specific path
 
 `worker.put(path, handler)`  Executes a handler on PUTs for a specific path
 
 `worker.post(path, handler)`  Executes a handler on POSTs for a specific path
+
+`worker.delete(path, handler)`  Executes a handler on DELETEs for a specific path
 
 ## Wildcard Paths
 Use wildcard `*` to handle multiple routes with one handler.  For example
@@ -71,7 +75,7 @@ worker.get('/user/:name/:account', (request, context) => {
 
 ## Context waitUntil()
 If background processing needs to be performed use `context.waitUntil` to
-wait for background task to complete.  Calling `waitUntil` will invoke `event.waitUntil` on the original fetch event.
+wait for a background task to complete.  Calling `waitUntil` will invoke `event.waitUntil` on the original fetch event.
 
 ## License
 MIT license; see [LICENSE](./LICENSE).

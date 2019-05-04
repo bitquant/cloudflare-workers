@@ -2,8 +2,15 @@ const UrlPattern = require('url-pattern');
 
 const handlerChain = [];
 
-function use(handler) {
-    handlerChain.push({ path: new UrlPattern('*'), func: handler, method: '*' });
+function use(pathOrHandler, handler) {
+    if (typeof pathOrHandler === 'string') {
+        // pathOrHandler is a path
+        handlerChain.push({ path: new UrlPattern(pathOrHandler), func: handler, method: '*' });
+    }
+    else {
+        // pathOrHandler is a handler
+        handlerChain.push({ path: new UrlPattern('*'), func: pathOrHandler, method: '*' });
+    }
 }
 function get(path, handler) {
     handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'GET' });
@@ -14,6 +21,9 @@ function put(path, handler) {
 }
 function post(path, handler) {
     handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'POST' });
+}
+function deleteHandler(path, handler) {
+    handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'DELETE' });
 }
 
 async function handleRequest(event) {
@@ -59,6 +69,7 @@ exports.use = use;
 exports.get = get;
 exports.put = put;
 exports.post = post;
+exports.delete = deleteHandler;
 exports.handleRequest = handleRequest;
 
 function removeTrailingSlash(request) {

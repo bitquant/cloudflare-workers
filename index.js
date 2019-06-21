@@ -25,6 +25,9 @@ function post(path, handler) {
 function deleteHandler(path, handler) {
     handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'DELETE' });
 }
+function head(path, handler) {
+    handlerChain.push({ path: new UrlPattern(path), func: handler, method: 'HEAD' });
+}
 
 async function handleRequest(event) {
 
@@ -70,6 +73,7 @@ exports.get = get;
 exports.put = put;
 exports.post = post;
 exports.delete = deleteHandler;
+exports.head = head;
 exports.handleRequest = handleRequest;
 
 function removeTrailingSlash(request) {

@@ -33,6 +33,8 @@ See ['Using NPM modules'](https://developers.cloudflare.com/workers/writing-work
 
 `worker.delete(path, handler)`  Executes a handler on DELETEs for a specific path
 
+`worker.head(path, handler)`  Executes a handler on HEAD for a specific path
+
 ## Wildcard Paths
 Use wildcard `*` to handle multiple routes with one handler.  For example
 ```javascript

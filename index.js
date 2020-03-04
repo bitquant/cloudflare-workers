@@ -23,13 +23,11 @@ class WorkerRouter extends Trouter {
     }
 }
 
-WorkerRouter.prototype.handleRequest = async function(event) {
+WorkerRouter.prototype.handleRequest = async function(event, context = { }) {
 
     try {
         var request = event.request;
-        var context = {
-            waitUntil: (p) => event.waitUntil(p)
-        }
+        context.waitUntil = (p) => event.waitUntil(p);
 
         if (this.ingressHandler !== undefined) {
             let igResult = this.ingressHandler(request, context);
